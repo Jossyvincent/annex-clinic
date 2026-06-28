@@ -1,9 +1,6 @@
 import type { Route } from "./+types/home";
 import Navbar from "~/components/navbar";
 import Hero from "~/components/heroSection";
-import Question from "~/components/question";
-import Response from "~/components/doctorResponse";
-import Appointment from "~/components/bookAppointment";
 import Footer from "~/components/footer";
 import { db } from "~/lib/db.server";
 import crypto from "crypto";
@@ -78,10 +75,9 @@ export async function action({ request }: Route.ActionArgs) {
       questionLink: `/question/${token}`,
     };
   } catch (error) {
-  console.error(error);
-  // Throw a Response object with JSON body and 500 status
-  
-}   
+    console.error(error);
+    // Throw a Response object with JSON body and 500 status
+  }
 }
 
 export default function Home() {
@@ -91,12 +87,6 @@ export default function Home() {
       <Navbar />
       {/* Hero section */}
       <Hero />
-      {/* patient question section */}
-      <Question />
-      {/* Doctors Response section */}
-      <Response />
-      {/* Book appointment section */}
-      <Appointment />
       {/* The footer */}
       <Footer />
     </main>
