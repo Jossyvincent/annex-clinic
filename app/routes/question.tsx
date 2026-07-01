@@ -1,5 +1,34 @@
-import { Form, useNavigation, useActionData } from "react-router";
+import { Form, useNavigation, useActionData, data } from "react-router";
+import type { Route } from "./+types/question";
 
+import { validateQuestion } from "~/validators/question.validator";
+import { createQuestion } from "~/models/questions.server";
+
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+
+  const Data = {
+    title: String(formData.get("title")),
+    question: String(formData.get("question")),
+    age: String(formData.get("age")),
+    gender: String(formData.get("gender")),
+  };
+
+  const { values, errors } = validateQuestion(Data);
+
+  if (Object.keys(errors).length > 0) {
+    return data({ errors }, { status: 400 });
+  } else {
+    const validValues = {
+      title: values.title,
+      question: values.question,
+      age: values.age,
+      gender: values.gender,
+    };
+    const { questionLink } = await createQuestion(validValues);
+    return data({ success: true, questionLink });
+  }
+}
 export default function Question() {
   const actionData = useActionData();
   const navigation = useNavigation();
@@ -32,10 +61,15 @@ export default function Question() {
               <input
                 type="text"
                 name="title"
-                required
+                defaultValue={actionData?.values?.title ?? ""}
                 placeholder="e.g. What causes recurring headaches?"
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
               />
+              {actionData?.errors?.title && (
+                <p className="mt-1 text-sm text-red-600">
+                  {actionData.errors.title}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -43,11 +77,16 @@ export default function Question() {
               </label>
               <textarea
                 name="question"
-                required
+                defaultValue={actionData?.values?.question ?? ""}
                 placeholder="Describe your symptoms or concern in detail..."
                 rows={7}
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all resize-none"
               />
+              {actionData?.errors?.question && (
+                <p className="mt-1 text-sm text-red-600">
+                  {actionData.errors.question}
+                </p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -57,9 +96,15 @@ export default function Question() {
                 <input
                   type="number"
                   name="age"
+                  defaultValue={actionData?.values?.age ?? ""}
                   placeholder="Your age"
                   className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                 />
+                {actionData?.errors?.age && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {actionData.errors.age}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
