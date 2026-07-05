@@ -1,4 +1,4 @@
-type ValidQuestion = {
+export type ValidQuestion = {
   title?: string;
   question?: string;
   age?: number;
@@ -20,10 +20,10 @@ export function validateQuestion(data: {
   const age = data.age.trim();
 
   //validating the title
-  if (!title || title === "") {
+  if (title === "") {
     errors.title = "Title is required";
-  } else if (title.length > 255) {
-    errors.title = "Title too long";
+  } else if (title.length > 100 && title.length < 5) {
+    errors.title = "Title too long or short, keep it reasonble";
   } else {
     values.title = title;
   }
@@ -31,6 +31,8 @@ export function validateQuestion(data: {
   // validating the question
   if (!question || question === "") {
     errors.question = "Question is required";
+  } else if (question.length < 20) {
+    errors.question = "question is too short";
   } else {
     values.question = question;
   }
@@ -49,7 +51,7 @@ export function validateQuestion(data: {
   }
   // validating gender
 
-  if (gender && gender !== "") {
+  if (gender !== "") {
     if (gender.length > 20) {
       errors.gender = "Gender must be 20 characters or less";
     } else {
