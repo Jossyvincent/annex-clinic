@@ -21,5 +21,6 @@ export async function createQuestion(data: {
   return {
     token,
     questionLink: `/questions/${token}`,
+    Error
   };
 }
