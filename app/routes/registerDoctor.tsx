@@ -3,10 +3,6 @@ import { validateDoctor } from "~/validators/doctor.validator";
 import { createDoctor } from "~/models/doctors.server";
 import type { Route } from "./+types/registerDoctor";
 
-export function meta() {
-  return [{ title: "Register Doctor — Annex Clinic" }];
-}
-
 export async function action({ request }: Route.ActionArgs) {
   const formdata = await request.formData();
   const Data = {

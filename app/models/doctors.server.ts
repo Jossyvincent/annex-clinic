@@ -23,3 +23,26 @@ export async function createDoctor(data: {
     throw new Error("Unable to create doctor");
   }
 }
+
+export type Doctor = {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+};
+
+export async function findDoctorByEmail(email: string): Promise<Doctor | null> {
+  try {
+    const results = await db.query<Doctor>(
+      `SELECT id, name, email, password FROM doctors WHERE email = $1`,
+      [email],
+    );
+    if (results.rows.length === 0) {
+      return null;
+    }
+    return results.rows[0];
+  } catch (error) {
+    console.error("Database query error:", error);
+    throw new Error("Failed to fetch doctor details");
+  }
+}

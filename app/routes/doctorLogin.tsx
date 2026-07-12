@@ -1,10 +1,56 @@
-import { Link } from "react-router";
+import {
+  Form,
+  Link,
+  useNavigation,
+  useActionData,
+  data,
+  redirect,
+} from "react-router";
+import { validateLogin } from "~/validators/doctor.validator";
+import { findDoctorByEmail } from "~/models/doctors.server";
+import type { Route } from "./+types/doctorLogin";
+import bcrypt from "bcryptjs";
 
-export function meta() {
-  return [{ title: "Doctor Login — Annex Clinic" }];
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+  const Data = {
+    email: String(formData.get("email")),
+    password: String(formData.get("password")),
+  };
+  const { errors, values } = validateLogin(Data);
+  if (Object.keys(errors).length > 0) {
+    return data({ errors, values }, { status: 400 });
+  }
+  const doctor = await findDoctorByEmail(values.email);
+  if (!doctor) {
+    return data(
+      {
+        errors: {
+          general: "Invalid email or password.",
+        },
+      },
+      { status: 401 },
+    );
+  }
+
+  const isMatch = await bcrypt.compare(values.password, doctor.password);
+  if (isMatch) {
+    return redirect("/doctor/dashboard");
+  }
+  return data(
+    {
+      errors: {
+        general: "Invalid email or password.",
+      },
+    },
+    { status: 401 },
+  );
 }
 
 export default function DoctorLogin() {
+  const actionData = useActionData();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
   return (
     <main className="min-h-screen flex flex-col relative overflow-hidden bg-linear-to-br from-violet-950 via-violet-900 to-indigo-900">
       {/* ── Decorative blobs ─────────────────────────────────────── */}
@@ -79,16 +125,23 @@ export default function DoctorLogin() {
 
           {/* Card */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <form className="space-y-5">
+            <form method="post" className="space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-violet-200 mb-1.5">
                   Email Address
                 </label>
                 <input
                   type="email"
+                  name="email"
+                  defaultValue={actionData?.values?.email ?? ""}
                   placeholder="doctor@annexclinic.com"
                   className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-violet-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                 />
+                {actionData?.errors?.email && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {actionData.errors.email}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -105,17 +158,29 @@ export default function DoctorLogin() {
                 </div>
                 <input
                   type="password"
+                  name="password"
                   placeholder="••••••••"
                   className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-violet-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                 />
+                {actionData?.errors?.password && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {actionData.errors.password}
+                  </p>
+                )}
               </div>
 
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="w-full bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white font-bold text-base py-4 rounded-xl shadow-lg shadow-emerald-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-500/30 mt-2"
               >
-                Sign In
+                {isSubmitting ? "Submitting..." : "Sign In"}
               </button>
+              {actionData?.errors?.general && (
+                <p className="mt-1 text-sm text-red-600">
+                  {actionData.errors.general}
+                </p>
+              )}
             </form>
           </div>
 
