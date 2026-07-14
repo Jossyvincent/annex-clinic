@@ -21,6 +21,15 @@ export async function createQuestion(data: {
   return {
     token,
     questionLink: `/questions/${token}`,
-    Error
+    Error,
   };
+}
+export async function getPendingQuestions() {
+  const reuslts = await db.query(
+    `SELECT id, token, title, question, age, gender
+      FROM questions
+      WHERE status = 'pending'
+      ORDER BY created_at ASC;`,
+  );
+  return reuslts.rows;
 }

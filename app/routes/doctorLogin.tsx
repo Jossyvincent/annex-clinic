@@ -125,7 +125,7 @@ export default function DoctorLogin() {
 
           {/* Card */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <form method="post" className="space-y-5">
+            <Form method="post" className="space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-violet-200 mb-1.5">
                   Email Address
@@ -181,7 +181,7 @@ export default function DoctorLogin() {
                   {actionData.errors.general}
                 </p>
               )}
-            </form>
+            </Form>
           </div>
 
           {/* Footer note */}

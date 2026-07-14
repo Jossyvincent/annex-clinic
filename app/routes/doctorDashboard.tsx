@@ -1,10 +1,28 @@
-import { Link } from "react-router";
+import {
+  Link,
+  useNavigation,
+  data,
+  redirect,
+  useLoaderData,
+} from "react-router";
 
-export function meta() {
-  return [{ title: "Doctor Dashboard — Annex Clinic" }];
+import { getPendingQuestions } from "~/models/questions.server";
+import type { Route } from "./+types/doctorDashboard";
+
+export async function loader({ request }: Route.LoaderArgs) {
+  try {
+    const questions = await getPendingQuestions();
+    return data({ questions });
+  } catch (error) {
+    console.error(error);
+    throw new Response("Unable to load dashboard.", {
+      status: 500,
+    });
+  }
 }
 
 export default function DoctorDashboard() {
+  const loaderData = useLoaderData();
   return (
     <main className="min-h-screen flex flex-col bg-violet-950 relative overflow-x-hidden">
       {/* ── Decorative blobs ─────────────────────────────────────── */}
@@ -62,12 +80,11 @@ export default function DoctorDashboard() {
 
       {/* ── Main Grid ────────────────────────────────────────────── */}
       <div className="relative z-10 max-w-7xl mx-auto w-full px-6 pb-16 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-
         {/* ── Pending Questions ─────────────────────────────────── */}
         <section>
           {/* Section header */}
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-violet-500/20 border border-violet-400/30 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -78,54 +95,53 @@ export default function DoctorDashboard() {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-violet-300"
+                className="text-emerald-400"
               >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <path d="M12 17h.01" />
               </svg>
             </div>
             <h2 className="text-lg font-bold text-white">Pending Questions</h2>
-            <span className="ml-auto text-xs font-semibold bg-violet-500/20 text-violet-300 border border-violet-400/20 px-2.5 py-0.5 rounded-full">
-              1 pending
+            <span className="ml-auto text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/20 px-2.5 py-0.5 rounded-full">
+              {loaderData.questions.length} pending
             </span>
           </div>
 
-          {/* Question card */}
-          <article className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-            {/* Meta */}
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-mono font-semibold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2.5 py-1 rounded-lg">
-                Q-123
-              </span>
-              <span className="text-xs text-violet-400">Just now</span>
+          {loaderData.questions.length === 0 ? (
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 text-center">
+              <p className="text-violet-400 text-sm">No pending questions.</p>
             </div>
-
-            {/* Question text */}
-            <p className="text-violet-100 text-sm leading-relaxed mb-5">
-              I have headaches for two weeks...
-            </p>
-
-            {/* Divider */}
-            <div className="border-t border-white/10 mb-5" />
-
-            {/* Response form */}
-            <div>
-              <label className="block text-xs font-semibold text-violet-300 uppercase tracking-widest mb-2">
-                Your Response
-              </label>
-              <textarea
-                placeholder="Write a professional response for this patient..."
-                rows={4}
-                className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-violet-400 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none"
-              />
+          ) : (
+            <div className="flex flex-col gap-4">
+              {loaderData.questions.map((q: { id: number; title: string; question: string; age: number; gender: string }) => (
+                <article
+                  key={q.id}
+                  className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6"
+                >
+                  <h3 className="font-bold text-white text-base mb-1">{q.title}</h3>
+                  <p className="text-violet-300 text-sm">{q.question}</p>
+                  <div className="border-t border-white/10 mt-4 mb-4" />
+                  <div className="flex justify-between text-xs text-violet-400 mb-4">
+                    <span>
+                      <span className="font-semibold uppercase tracking-widest">Age</span>{" "}
+                      <span className="text-white font-medium">{q.age}</span>
+                    </span>
+                    <span>
+                      <span className="font-semibold uppercase tracking-widest">Gender</span>{" "}
+                      <span className="text-white font-medium">{q.gender}</span>
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="w-full bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-emerald-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-emerald-500/30"
+                  >
+                    Review
+                  </button>
+                </article>
+              ))}
             </div>
-
-            <button
-              type="button"
-              className="mt-4 w-full bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white font-bold text-sm py-3 rounded-xl shadow-lg shadow-emerald-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-emerald-500/30"
-            >
-              Send Reply
-            </button>
-          </article>
+          )}
         </section>
 
         {/* ── Pending Appointments ──────────────────────────────── */}
