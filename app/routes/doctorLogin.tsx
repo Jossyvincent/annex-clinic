@@ -1,15 +1,10 @@
-import {
-  Form,
-  Link,
-  useNavigation,
-  useActionData,
-  data,
-  redirect,
-} from "react-router";
+import {Form, Link, useNavigation, useActionData, data, redirect,} from "react-router";
 import { validateLogin } from "~/validators/doctor.validator";
 import { findDoctorByEmail } from "~/models/doctors.server";
 import type { Route } from "./+types/doctorLogin";
 import bcrypt from "bcryptjs";
+import { generateToken } from "~/lib/auth.server";
+import { createSessionCookie } from "~/lib/cookie.server";
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -17,10 +12,13 @@ export async function action({ request }: Route.ActionArgs) {
     email: String(formData.get("email")),
     password: String(formData.get("password")),
   };
+
+  // validating the log in credentials
   const { errors, values } = validateLogin(Data);
   if (Object.keys(errors).length > 0) {
     return data({ errors, values }, { status: 400 });
   }
+  // looking up the doctor in the database
   const doctor = await findDoctorByEmail(values.email);
   if (!doctor) {
     return data(
@@ -33,9 +31,16 @@ export async function action({ request }: Route.ActionArgs) {
     );
   }
 
+  // comparing the passwords to establish if they match
   const isMatch = await bcrypt.compare(values.password, doctor.password);
   if (isMatch) {
-    return redirect("/doctor/dashboard");
+    const token = generateToken(doctor.id, doctor.email);
+    const cookie = await createSessionCookie(token);
+    return redirect("/doctor/dashboard", {
+      headers: {
+        "set-cookie": cookie,
+      },
+    });
   }
   return data(
     {

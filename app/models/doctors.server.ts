@@ -1,6 +1,7 @@
 // import type { ValidDoctor } from "~/validators/doctor.validator";
 import { db } from "~/lib/db.server";
 import bcrypt from "bcryptjs";
+
 export async function createDoctor(data: {
   name: string;
   email: string;
@@ -34,7 +35,7 @@ export type Doctor = {
 export async function findDoctorByEmail(email: string): Promise<Doctor | null> {
   try {
     const results = await db.query<Doctor>(
-      `SELECT id, name, email, password FROM doctors WHERE email = $1`,
+      `SELECT doctor_id, name, email, password FROM doctors WHERE email = $1`,
       [email],
     );
     if (results.rows.length === 0) {

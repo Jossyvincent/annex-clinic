@@ -114,9 +114,9 @@ export default function DoctorDashboard() {
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              {loaderData.questions.map((q: { id: number; title: string; question: string; age: number; gender: string }) => (
+              {loaderData.questions.map((q: { question_id: number; title: string; question: string; age: number; gender: string }) => (
                 <article
-                  key={q.id}
+                  key={q.question_id}
                   className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6"
                 >
                   <h3 className="font-bold text-white text-base mb-1">{q.title}</h3>
@@ -132,12 +132,12 @@ export default function DoctorDashboard() {
                       <span className="text-white font-medium">{q.gender}</span>
                     </span>
                   </div>
-                  <button
-                    type="button"
+                  <Link
+                    to={`/doctor/questions/${q.question_id}`}
                     className="w-full bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-emerald-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-emerald-500/30"
                   >
                     Review
-                  </button>
+                  </Link>
                 </article>
               ))}
             </div>

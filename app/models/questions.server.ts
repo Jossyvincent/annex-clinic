@@ -26,7 +26,7 @@ export async function createQuestion(data: {
 }
 export async function getPendingQuestions() {
   const reuslts = await db.query(
-    `SELECT id, token, title, question, age, gender
+    `SELECT question_id, token, title, question, age, gender
       FROM questions
       WHERE status = 'pending'
       ORDER BY created_at ASC;`,
